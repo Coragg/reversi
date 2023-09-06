@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reversi</title>
+    <style>
+        /* Estilos para el tablero y las casillas */
+        .tablero {
+            display: grid;
+            grid-template-columns: repeat(8, 40px);
+            gap: 2px;
+        }
+        .casilla {
+            width: 40px;
+            height: 40px;
+            background-color: #009688;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Reversi</h1>
+    <div class="tablero" id="tablero"></div>
+    <p id="mensaje"></p>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+          const tamanoTablero = 8;
+          let tablero = inicializarTablero(tamanoTablero);
+          let jugadorActual = 'X';
+          let [contadorJugadorX, contadorJugadorO] = [2, 2];
+        
+          const tableroElement = document.getElementById("tablero");
+          const mensajeElement = document.getElementById("mensaje");
+        
+          // Crea el tablero de juego
+          for (let fila = 0; fila < tamanoTablero; fila++) {
+            for (let columna = 0; columna < tamanoTablero; columna++) {
+              const casilla = document.createElement("div");
+              casilla.classList.add("casilla");
+              casilla.dataset.fila = fila;
+              casilla.dataset.columna = columna;
+              casilla.addEventListener("click", () => {
+                if (jugadorActual === 'X') {
+                  const fila = parseInt(casilla.dataset.fila);
+                  const columna = parseInt(casilla.dataset.columna);
+                  if (esMovimientoValido(tablero, fila, columna, jugadorActual)) {
+                    tablero = realizarMovimiento(tablero, fila, columna, jugadorActual);
+                    [contadorJugadorX, contadorJugadorO] = contarFichas(tablero);
+                    jugadorActual = 'O';
+                    actualizarTablero();
+
+                    // Después de que el jugador realice su jugada, es el turno de la IA.
+                    if (jugadorActual === 'O') {
+                      const [filaIA, columnaIA] = movimientoIA(tablero, 'O');
+                      if (filaIA !== -1 && columnaIA !== -1) {
+                        tablero = realizarMovimiento(tablero, filaIA, columnaIA, 'O');
+                        [contadorJugadorX, contadorJugadorO] = contarFichas(tablero);
+                        jugadorActual = 'X'; // Cambio de nuevo al jugador X
+                        actualizarTablero();
+                      } else {
+                        mensajeElement.textContent = "La IA no puede realizar movimientos. Turno de X.";
+                        jugadorActual = 'X'; // Cambio de nuevo al jugador X
+                      }
+                    }
+                  } else {
+                    mensajeElement.textContent = "Movimiento inválido. Inténtalo de nuevo.";
+                  }
+                }
+              });
+              tableroElement.appendChild(casilla);
+            }
+          }
+        
+          // Función para actualizar el tablero visualmente
+          function actualizarTablero() {
+            for (let fila = 0; fila < tamanoTablero; fila++) {
+              for (let columna = 0; columna < tamanoTablero; columna++) {
+                const casilla = tableroElement.querySelector(`[data-fila="${fila}"][data-columna="${columna}"]`);
+                casilla.textContent = tablero[fila][columna];
+              }
+            }
+            mensajeElement.textContent = `Jugador X: ${contadorJugadorX}  Jugador O: ${contadorJugadorO}`;
+          }
+        
+          // Inicializa el tablero visual
+          actualizarTablero();
+        });
+
+        function inicializarTablero(tamano) {
+          let tablero = new Array(tamano);
+          for (let i = 0; i < tamano; i++) {
+            tablero[i] = new Array(tamano).fill(' ');
+          }
+          let centro = Math.floor(tamano / 2);
+          tablero[centro - 1][centro - 1] = 'O';
+          tablero[centro - 1][centro] = 'X';
+          tablero[centro][centro - 1] = 'X';
+          tablero[centro][centro] = 'O';
+          return tablero;
+        }
+
+        function esMovimientoValido(tablero, fila, columna, jugador) {
+            if (tablero[fila][columna] !== ' ') {
+              return false; // La casilla ya está ocupada.
+            }
+          
+            const direcciones = [
+              [-1, -1], [-1, 0], [-1, 1],
+              [0, -1],           [0, 1],
+              [1, -1], [1, 0], [1, 1]
+            ];
+          
+            for (const [dr, dc] of direcciones) {
+              let r = fila + dr;
+              let c = columna + dc;
+              let fichasAReemplazar = [];
+          
+              while (r >= 0 && r < tablero.length && c >= 0 && c < tablero[0].length) {
+                if (tablero[r][c] === ' ' || tablero[r][c] === jugador) {
+                  break;
+                }
+                fichasAReemplazar.push([r, c]);
+                r += dr;
+                c += dc;
+              }
+          
+              if (
+                r >= 0 &&
+                r < tablero.length &&
+                c >= 0 &&
+                c < tablero[0].length &&
+                tablero[r][c] === jugador &&
+                fichasAReemplazar.length > 0
+              ) {
+                // El movimiento es válido.
+                return true;
+              }
+            }
+          
+            return false;
+          }
+          
+
+          function realizarMovimiento(tablero, fila, columna, jugador) {
+            const nuevoTablero = JSON.parse(JSON.stringify(tablero)); // Copia el tablero para no modificar el original.
+          
+            const direcciones = [
+              [-1, -1], [-1, 0], [-1, 1],
+              [0, -1],           [0, 1],
+              [1, -1], [1, 0], [1, 1]
+            ];
+          
+            nuevoTablero[fila][columna] = jugador;
+          
+            for (const [dr, dc] of direcciones) {
+              let r = fila + dr;
+              let c = columna + dc;
+              let fichasAReemplazar = [];
+          
+              while (r >= 0 && r < tablero.length && c >= 0 && c < tablero[0].length) {
+                if (tablero[r][c] === ' ' || tablero[r][c] === jugador) {
+                  break;
+                }
+                fichasAReemplazar.push([r, c]);
+                r += dr;
+                c += dc;
+              }
+          
+              if (
+                r >= 0 &&
+                r < tablero.length &&
+                c >= 0 &&
+                c < tablero[0].length &&
+                tablero[r][c] === jugador &&
+                fichasAReemplazar.length > 0
+              ) {
+                for (const [rf, cf] of fichasAReemplazar) {
+                  nuevoTablero[rf][cf] = jugador;
+                }
+              }
+            }
+          
+            return nuevoTablero;
+          }
+          
+
+          function contarFichas(tablero) {
+            let fichasX = 0;
+            let fichasO = 0;
+          
+            for (const fila of tablero) {
+              for (const casilla of fila) {
+                if (casilla === 'X') {
+                  fichasX++;
+                } else if (casilla === 'O') {
+                  fichasO++;
+                }
+              }
+            }
+          
+            return [fichasX, fichasO];
+          }
+          
+
+          function movimientoIA(tablero, jugador) {
+            for (let fila = 0; fila < tablero.length; fila++) {
+                for (let columna = 0; columna < tablero[0].length; columna++) {
+                    if (esMovimientoValido(tablero, fila, columna, jugador)) {
+                        return [fila, columna]; // Devuelve el primer movimiento válido encontrado.
+                    }
+                }
+            }
+            return [-1, -1]; // Si no hay movimientos válidos, devuelve [-1, -1].
+        }
+    </script>
+</body>
+</html>

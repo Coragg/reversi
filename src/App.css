@@ -1,8 +1,17 @@
-.tablero {
+.tablero-8x8 {
   display: grid;
   grid-template-columns: repeat(8, 40px);
   gap: 2px;
 }
+
+/* Estilos para el tablero 6x6 */
+.tablero-6x6 {
+  display: grid;
+  gap: 2px;
+  grid-template-columns: repeat(6, 40px);
+}
+
+/* Estilos para las casillas */
 .casilla {
   width: 40px;
   height: 40px;
@@ -13,3 +22,5 @@
   font-size: 24px;
   cursor: pointer;
 }
+
+

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
+import _ from 'lodash';
 
 const Reversi = () => {
   const [tamanoTablero, setTamanoTablero] = useState(6);
@@ -7,26 +8,20 @@ const Reversi = () => {
   const [jugadorActual, setJugadorActual] = useState('X');
   const [contadorJugadorX, setContadorJugadorX] = useState(2);
   const [contadorJugadorO, setContadorJugadorO] = useState(2);
+  const [nivelDificultad, setNivelDificultad] = useState('facil');
+  const [datosIA, setDatosIA] = useState({
+    nodosExplorados: 0,
+    tiempoUtilizado: 0,
+  });
+  const [mensaje, setMensaje] = useState("");
 
-  const actualizarTablero = () => {
-    const tableroElement = document.getElementById("tablero");
-    const mensajeElement = document.getElementById("mensaje");
-
-    for (let fila = 0; fila < tamanoTablero; fila++) {
-      for (let columna = 0; columna < tamanoTablero; columna++) {
-        const casilla = tableroElement.querySelector(`[data-fila="${fila}"][data-columna="${columna}"]`);
-        casilla.textContent = tablero[fila][columna];
-      }
-    }
-    mensajeElement.textContent = `Jugador X: ${contadorJugadorX}  Jugador O: ${contadorJugadorO}`;
-  };
-
-  // Inicializa el tablero visual
   useEffect(() => {
     actualizarTablero();
-  });
+  }, [tablero, contadorJugadorX, contadorJugadorO]);
 
-  // Función para actualizar el tablero visualmente
+  const actualizarTablero = useCallback(() => {
+    setMensaje(`Jugador X: ${contadorJugadorX}  Jugador O: ${contadorJugadorO}`);
+  }, [contadorJugadorX, contadorJugadorO]);
 
   const handleBoardSizeChange = (event) => {
     const newSize = parseInt(event.target.value);
@@ -44,26 +39,85 @@ const Reversi = () => {
         setContadorJugadorO(nuevoContadorJugadorO);
         setJugadorActual('O');
       } else {
-        // Puedes mostrar un mensaje de movimiento inválido aquí.
-        // mensajeElement.textContent = "Movimiento inválido. Inténtalo de nuevo.";
+        setMensaje("Movimiento inválido. Inténtalo de nuevo");
       }
     }
 
-    // Move AI's turn logic here.
     if (jugadorActual === 'O') {
-      const [filaIA, columnaIA] = movimientoIA(tablero, 'O');
-      if (filaIA !== -1 && columnaIA !== -1) {
-        const nuevoTableroIA = realizarMovimiento(tablero, filaIA, columnaIA, 'O');
-        const [nuevoContadorJugadorXIA, nuevoContadorJugadorOIA] = contarFichas(nuevoTableroIA);
-        setTablero(nuevoTableroIA);
-        setContadorJugadorX(nuevoContadorJugadorXIA);
-        setContadorJugadorO(nuevoContadorJugadorOIA);
-        setJugadorActual('X'); // Cambio de nuevo al jugador X
-      } else {
-        // Puedes mostrar un mensaje de que la IA no puede realizar movimientos aquí.
-        // mensajeElement.textContent = "La IA no puede realizar movimientos. Turno de X.";
-        setJugadorActual('X'); // Cambio de nuevo al jugador X
-      }
+      handleAIMove();
+    }
+  };
+
+  const handleAIMove = () => {
+    if (nivelDificultad === 'facil') {
+      handleAIEasyMove();
+    } else if (nivelDificultad === 'medio') {
+      handleAIMediumMove();
+    } else if (nivelDificultad === 'dificil') {
+      handleAIHardMove();
+    }
+  };
+
+  const handleAIEasyMove = () => {
+    const startTime = performance.now();
+    const [bestRow, bestCol] = obtenerMovimientoAleatorio(tablero, 'O');
+    const endTime = performance.now();
+
+    const tiempoTranscurrido = endTime - startTime;
+    setDatosIA((prevDatos) => ({
+      nodosExplorados: prevDatos.nodosExplorados + 1,
+      tiempoUtilizado: tiempoTranscurrido,
+    }));
+
+    if (bestRow !== -1 && bestCol !== -1) {
+      const nuevoTableroIA = realizarMovimiento(tablero, bestRow, bestCol, 'O');
+      const [nuevoContadorJugadorXIA, nuevoContadorJugadorOIA] = contarFichas(nuevoTableroIA);
+      setTablero(nuevoTableroIA);
+      setContadorJugadorX(nuevoContadorJugadorXIA);
+      setContadorJugadorO(nuevoContadorJugadorOIA);
+      setJugadorActual('X');
+    }
+  };
+
+  const handleAIMediumMove = () => {
+    const startTime = performance.now();
+    const [bestRow, bestCol] = minimax(tablero, 'O', -Infinity, Infinity, 3);
+    const endTime = performance.now();
+
+    const tiempoTranscurrido = endTime - startTime;
+    setDatosIA((prevDatos) => ({
+      nodosExplorados: prevDatos.nodosExplorados + 1,
+      tiempoUtilizado: tiempoTranscurrido,
+    }));
+
+    if (bestRow !== -1 && bestCol !== -1) {
+      const nuevoTableroIA = realizarMovimiento(tablero, bestRow, bestCol, 'O');
+      const [nuevoContadorJugadorXIA, nuevoContadorJugadorOIA] = contarFichas(nuevoTableroIA);
+      setTablero(nuevoTableroIA);
+      setContadorJugadorX(nuevoContadorJugadorXIA);
+      setContadorJugadorO(nuevoContadorJugadorOIA);
+      setJugadorActual('X');
+    }
+  };
+
+  const handleAIHardMove = () => {
+    const startTime = performance.now();
+    const [bestRow, bestCol] = minimax(tablero, 'O', -Infinity, Infinity, 5);
+    const endTime = performance.now();
+
+    const tiempoTranscurrido = endTime - startTime;
+    setDatosIA((prevDatos) => ({
+      nodosExplorados: prevDatos.nodosExplorados + 1,
+      tiempoUtilizado: tiempoTranscurrido,
+    }));
+
+    if (bestRow !== -1 && bestCol !== -1) {
+      const nuevoTableroIA = realizarMovimiento(tablero, bestRow, bestCol, 'O');
+      const [nuevoContadorJugadorXIA, nuevoContadorJugadorOIA] = contarFichas(nuevoTableroIA);
+      setTablero(nuevoTableroIA);
+      setContadorJugadorX(nuevoContadorJugadorXIA);
+      setContadorJugadorO(nuevoContadorJugadorOIA);
+      setJugadorActual('X');
     }
   };
 
@@ -81,7 +135,7 @@ const Reversi = () => {
   }
 
   function realizarMovimiento(tablero, fila, columna, jugador) {
-    const nuevoTablero = JSON.parse(JSON.stringify(tablero)); // Copia el tablero para no modificar el original.
+    const nuevoTablero = _.cloneDeep(tablero);
 
     const direcciones = [
       [-1, -1], [-1, 0], [-1, 1],
@@ -141,7 +195,7 @@ const Reversi = () => {
 
   function esMovimientoValido(tablero, fila, columna, jugador) {
     if (tablero[fila][columna] !== ' ') {
-      return false; // La casilla ya está ocupada.
+      return false;
     }
 
     const direcciones = [
@@ -172,7 +226,6 @@ const Reversi = () => {
         tablero[r][c] === jugador &&
         fichasAReemplazar.length > 0
       ) {
-        // El movimiento es válido.
         return true;
       }
     }
@@ -180,15 +233,106 @@ const Reversi = () => {
     return false;
   }
 
-  function movimientoIA(tablero, jugador) {
+  function obtenerMovimientoAleatorio(tablero, jugador) {
+    const movimientosPosibles = [];
     for (let fila = 0; fila < tablero.length; fila++) {
       for (let columna = 0; columna < tablero[0].length; columna++) {
         if (esMovimientoValido(tablero, fila, columna, jugador)) {
-          return [fila, columna]; // Devuelve el primer movimiento válido encontrado.
+          movimientosPosibles.push([fila, columna]);
         }
       }
     }
-    return [-1, -1]; // Si no hay movimientos válidos, devuelve [-1, -1].
+    if (movimientosPosibles.length === 0) {
+      return [-1, -1];
+    }
+    const indiceAleatorio = Math.floor(Math.random() * movimientosPosibles.length);
+    return movimientosPosibles[indiceAleatorio];
+  }
+
+  function minimax(tablero, jugador, alpha, beta, profundidad) {
+    if (profundidad === 0 || !hayMovimientosPosibles(tablero, jugador)) {
+      const [, score] = evaluarTablero(tablero);
+      return [-1, -1, score];
+    }
+
+    const movimientosPosibles = obtenerMovimientosPosibles(tablero, jugador);
+    let bestRow = -1;
+    let bestCol = -1;
+
+    if (jugador === 'O') {
+      let maxScore = -Infinity;
+      for (const [row, col] of movimientosPosibles) {
+        const nuevoTablero = realizarMovimiento(tablero, row, col, jugador);
+        const [, score] = minimax(nuevoTablero, 'X', alpha, beta, profundidad - 1);
+        if (score > maxScore) {
+          maxScore = score;
+          bestRow = row;
+          bestCol = col;
+        }
+        alpha = Math.max(alpha, score);
+        if (beta <= alpha) {
+          break;
+        }
+      }
+      return [bestRow, bestCol, maxScore];
+    } else {
+      let minScore = Infinity;
+      for (const [row, col] of movimientosPosibles) {
+        const nuevoTablero = realizarMovimiento(tablero, row, col, jugador);
+        const [, score] = minimax(nuevoTablero, 'O', alpha, beta, profundidad - 1);
+        if (score < minScore) {
+          minScore = score;
+          bestRow = row;
+          bestCol = col;
+        }
+        beta = Math.min(beta, score);
+        if (beta <= alpha) {
+          break;
+        }
+      }
+      return [bestRow, bestCol, minScore];
+    }
+  }
+
+  function evaluarTablero(tablero) {
+    let fichasX = 0;
+    let fichasO = 0;
+
+    for (const fila of tablero) {
+      for (const casilla of fila) {
+        if (casilla === 'X') {
+          fichasX++;
+        } else if (casilla === 'O') {
+          fichasO++;
+        }
+      }
+    }
+
+    const puntuacion = fichasX - fichasO;
+    return [fichasX, fichasO, puntuacion];
+  }
+
+  function hayMovimientosPosibles(tablero, jugador) {
+    for (let fila = 0; fila < tablero.length; fila++) {
+      for (let columna = 0; columna < tablero[0].length; columna++) {
+        if (esMovimientoValido(tablero, fila, columna, jugador)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  function obtenerMovimientosPosibles(tablero, jugador) {
+    const movimientosPosibles = [];
+    for (let fila = 0; fila < tablero.length; fila++) {
+      for (let columna = 0; columna < tablero[0].length; columna++) {
+        if (esMovimientoValido(tablero, fila, columna, jugador)) {
+          movimientosPosibles.push([fila, columna]);
+        }
+      }
+    }
+    return movimientosPosibles;
   }
 
   return (
@@ -199,7 +343,12 @@ const Reversi = () => {
         <option value={6}>6x6</option>
         <option value={8}>8x8</option>
       </select>
-      {/* Utiliza clases condicionales para aplicar los estilos según el tamaño del tablero */}
+      <label htmlFor="difficulty">Nivel de Dificultad:</label>
+      <select id="difficulty" onChange={(e) => setNivelDificultad(e.target.value)} value={nivelDificultad}>
+        <option value="facil">Fácil</option>
+        <option value="medio">Medio</option>
+        <option value="dificil">Difícil</option>
+      </select>
       <div className={`tablero ${tamanoTablero === 6 ? 'tablero-6x6' : 'tablero-8x8'}`} id="tablero">
         {tablero.map((fila, rowIndex) => (
           fila.map((casilla, columnIndex) => (
@@ -215,9 +364,12 @@ const Reversi = () => {
           ))
         ))}
       </div>
-      <p id="mensaje"></p>
+      <p id="mensaje">
+        Nodos explorados: {datosIA.nodosExplorados}, Tiempo utilizado: {datosIA.tiempoUtilizado.toFixed(2)} ms
+      </p>
     </div>
   );
 };
 
 export default Reversi;
+

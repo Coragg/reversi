@@ -7,6 +7,7 @@ const Reversi = ({ boardSize, difficulty }) => {
     const [jugadorActual, setJugadorActual] = useState('X');
     const [contadorJugadorX, setContadorJugadorX] = useState(2);
     const [contadorJugadorO, setContadorJugadorO] = useState(2);
+    const [juegoTerminado, setJuegoTerminado] = useState(false);
     const [nivelDificultad, setNivelDificultad] = useState('facil');
     const [datosIA, setDatosIA] = useState({
         nodosExplorados: 0,
@@ -16,6 +17,7 @@ const Reversi = ({ boardSize, difficulty }) => {
 
     useEffect(() => {
         actualizarTablero();
+        verificarFinDelJuego();
     }, [tablero, contadorJugadorX, contadorJugadorO]);
 
     const actualizarTablero = useCallback(() => {
@@ -28,6 +30,15 @@ const Reversi = ({ boardSize, difficulty }) => {
         setTamanoTablero(newSize);
     };
 
+    const verificarFinDelJuego = () => {
+        const movimientosPosiblesX = obtenerMovimientosPosibles(tablero, 'X');
+        const movimientosPosiblesO = obtenerMovimientosPosibles(tablero, 'O');
+
+        if (movimientosPosiblesX.length === 0 && movimientosPosiblesO.length === 0) {
+            setJuegoTerminado(true);
+        }
+    };
+
     const handleCasillaClick = (fila, columna) => {
         if (jugadorActual === 'X') {
             if (esMovimientoValido(tablero, fila, columna, jugadorActual)) {
@@ -37,6 +48,7 @@ const Reversi = ({ boardSize, difficulty }) => {
                 setContadorJugadorX(nuevoContadorJugadorX);
                 setContadorJugadorO(nuevoContadorJugadorO);
                 setJugadorActual('O');
+                verificarFinDelJuego();
             } else {
                 setMensaje("Movimiento inválido. Inténtalo de nuevo");
             }
@@ -343,6 +355,18 @@ const Reversi = ({ boardSize, difficulty }) => {
         return movimientosPosibles;
     }
 
+    function obtenerResultado() {
+        const [fichasX, fichasO] = contarFichas(tablero);
+    
+        if (fichasX > fichasO) {
+            return 'Jugador X gana';
+        } else if (fichasO > fichasX) {
+            return 'Jugador O gana';
+        } else {
+            return 'Empate';
+        }
+    }
+
     return (
         <div className="game-container">
             <h1>Reversi</h1>
@@ -373,8 +397,11 @@ const Reversi = ({ boardSize, difficulty }) => {
                 ))}
             </div>
             <p id="mensaje">
-                Nodos explorados: {datosIA.nodosExplorados}, Tiempo utilizado: {datosIA.tiempoUtilizado.toFixed(2)} ms
+                Nodos explorados: {datosIA.nodosExplorados}, Tiempo utilizado: {datosIA.tiempoUtilizado.toFixed(2)} ms               
             </p>
+            {juegoTerminado && (
+                <p id="mensaje">¡Juego terminado! Resultado: {obtenerResultado()}</p>
+            )}
         </div>
     );
 };

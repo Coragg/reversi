@@ -100,3 +100,7 @@ select {
   /*grid-template-columns: 1fr 1fr; /* Divide la fila en dos columnas iguales */
   gap: 30px; /* Espacio entre las columnas */
 }
+
+.sugerencia {
+  background-color: yellow; /* o cualquier estilo de resaltado que desees */
+}

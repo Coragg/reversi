@@ -9,6 +9,8 @@ const Reversi = ({ boardSize, difficulty }) => {
     const [contadorJugadorO, setContadorJugadorO] = useState(2);
     const [juegoTerminado, setJuegoTerminado] = useState(false);
     const [nivelDificultad, setNivelDificultad] = useState('facil');
+    const [sugerenciaActiva, setSugerenciaActiva] = useState(false);
+    const [coordenadasSugerencia, setCoordenadasSugerencia] = useState(null);
     const [datosIA, setDatosIA] = useState({
         nodosExplorados: 0,
         tiempoUtilizado: 0,
@@ -139,6 +141,16 @@ const Reversi = ({ boardSize, difficulty }) => {
             return <div className="ficha-negra"></div>;
         }
         return null; // No se mostrará ningún icono en casillas vacías
+    };
+
+    const sugerirJugada = () => {
+        // Calcula una jugada sugerida (por ejemplo, una jugada válida al azar)
+        const movimientosPosibles = obtenerMovimientosPosibles(tablero, jugadorActual);
+        if (movimientosPosibles.length > 0) {
+            const [fila, columna] = movimientosPosibles[Math.floor(Math.random() * movimientosPosibles.length)];
+            setCoordenadasSugerencia({ fila, columna });
+            setSugerenciaActiva(true);
+        }
     };
 
     function inicializarTablero(tamano) {
@@ -381,21 +393,24 @@ const Reversi = ({ boardSize, difficulty }) => {
                 <option value="medio">Medio</option>
                 <option value="dificil">Difícil</option>
             </select>
-            <div className={`tablero ${tamanoTablero === 6 ? 'tablero-6x6' : 'tablero-8x8'}`} id="tablero">
-                {tablero.map((fila, rowIndex) => (
-                    fila.map((casilla, columnIndex) => (
-                        <div
-                            key={`${rowIndex}-${columnIndex}`}
-                            className={`casilla ${casilla}`}
-                            data-fila={rowIndex}
-                            data-columna={columnIndex}
-                            onClick={() => handleCasillaClick(rowIndex, columnIndex)}
-                        >
-                            {renderIcon(casilla)}
-                        </div>
-                    ))
-                ))}
-            </div>
+            <button onClick={sugerirJugada}>Sugerir Jugada</button>
+
+                <div className={`tablero ${tamanoTablero === 6 ? 'tablero-6x6' : 'tablero-8x8'}`} id="tablero">
+                    {tablero.map((fila, rowIndex) => (
+                        fila.map((casilla, columnIndex) => (
+                            <div
+                                key={`${rowIndex}-${columnIndex}`}
+                                className={`casilla ${casilla} ${coordenadasSugerencia && coordenadasSugerencia.fila === rowIndex && coordenadasSugerencia.columna === columnIndex ? 'sugerencia' : ''}`}
+                                data-fila={rowIndex}
+                                data-columna={columnIndex}
+                                onClick={() => handleCasillaClick(rowIndex, columnIndex)}
+                            >
+                                {renderIcon(casilla)}
+                            </div>
+                        ))
+                    ))}
+                </div>
+
             <p id="mensaje">
                 Nodos explorados: {datosIA.nodosExplorados}, Tiempo utilizado: {datosIA.tiempoUtilizado.toFixed(2)} ms               
             </p>

@@ -91,7 +91,7 @@ const Reversi = ({ boardSize, difficulty }) => {
             setJugadorActual('X');
         }
     };
-//uwu
+//cuando owo => uwu (/°-°)/
     const handleAIMediumMove = () => {
         const startTime = performance.now();
         const [bestRow, bestCol] = minimax(tablero, 'O', -Infinity, Infinity, 5);

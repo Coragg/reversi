@@ -359,9 +359,9 @@ const Reversi = ({ boardSize, difficulty }) => {
         const [fichasX, fichasO] = contarFichas(tablero);
     
         if (fichasX > fichasO) {
-            return 'Jugador X gana';
+            return 'Jugador Blanco gana';
         } else if (fichasO > fichasX) {
-            return 'Jugador O gana';
+            return 'Jugador Negro gana';
         } else {
             return 'Empate';
         }

@@ -102,10 +102,10 @@ const Reversi = ({ boardSize, difficulty }) => {
             setJugadorActual('X');
         }
     };
-
+//cuando owo => uwu (/°-°)/
     const handleAIMediumMove = () => {
         const startTime = performance.now();
-        const [bestRow, bestCol] = minimax(tablero, 'O', -Infinity, Infinity, 3);
+        const [bestRow, bestCol] = minimax(tablero, 'O', -Infinity, Infinity, 5);
         const endTime = performance.now();
 
         const tiempoTranscurrido = endTime - startTime;
@@ -126,7 +126,7 @@ const Reversi = ({ boardSize, difficulty }) => {
 
     const handleAIHardMove = () => {
         const startTime = performance.now();
-        const [bestRow, bestCol] = minimax(tablero, 'O', -Infinity, Infinity, 5);
+        const [bestRow, bestCol] = minimax(tablero, 'O', -Infinity, Infinity, 7);
         const endTime = performance.now();
 
         const tiempoTranscurrido = endTime - startTime;

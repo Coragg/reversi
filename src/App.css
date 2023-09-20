@@ -102,5 +102,7 @@ select {
 }
 
 .sugerencia {
-  background-color: yellow; /* o cualquier estilo de resaltado que desees */
+  /* Estilos de la casilla sugerida cuando la sugerencia está activa */
+  background-color: yellow;
+  background-color:
 }

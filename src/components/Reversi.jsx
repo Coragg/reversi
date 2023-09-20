@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import _ from 'lodash'; // Asegúrate de importar la biblioteca Lodash si la estás utilizando
 
 const Reversi = ({ boardSize, difficulty }) => {
-    const [tamanoTablero, setTamanoTablero] = useState(6);
+    const [tamanoTablero, setTamanoTablero] = useState(8);
     const [tablero, setTablero] = useState(inicializarTablero(tamanoTablero));
     const [jugadorActual, setJugadorActual] = useState('X');
     const [contadorJugadorX, setContadorJugadorX] = useState(2);
@@ -10,6 +10,7 @@ const Reversi = ({ boardSize, difficulty }) => {
     const [juegoTerminado, setJuegoTerminado] = useState(false);
     const [nivelDificultad, setNivelDificultad] = useState('facil');
     const [sugerenciaActiva, setSugerenciaActiva] = useState(false);
+    const [sugerenciaRealizada, setSugerenciaRealizada] = useState(false);
     const [coordenadasSugerencia, setCoordenadasSugerencia] = useState(null);
     const [datosIA, setDatosIA] = useState({
         nodosExplorados: 0,
@@ -38,6 +39,10 @@ const Reversi = ({ boardSize, difficulty }) => {
 
         if (movimientosPosiblesX.length === 0 && movimientosPosiblesO.length === 0) {
             setJuegoTerminado(true);
+        } else if (movimientosPosiblesX.length === 0) {
+            setJugadorActual('O');
+        } else if (movimientosPosiblesO.length === 0) {
+            setJugadorActual('X');
         }
     };
 
@@ -51,14 +56,20 @@ const Reversi = ({ boardSize, difficulty }) => {
                 setContadorJugadorO(nuevoContadorJugadorO);
                 setJugadorActual('O');
                 verificarFinDelJuego();
+                setSugerenciaRealizada(false);               
             } else {
                 setMensaje("Movimiento inválido. Inténtalo de nuevo");
             }
         }
 
         if (jugadorActual === 'O') {
-            handleAIMove();
+            if (obtenerMovimientosPosibles(tablero, 'O').length > 0) {
+                handleAIMove();
+            } else {
+                setJugadorActual('X');
+            }
         }
+        setSugerenciaActiva(false); 
     };
 
     const handleAIMove = () => {
@@ -73,7 +84,7 @@ const Reversi = ({ boardSize, difficulty }) => {
 
     const handleAIEasyMove = () => {
         const startTime = performance.now();
-        const [bestRow, bestCol] = obtenerMovimientoAleatorio(tablero, 'O');
+        const [bestRow, bestCol] = minimax(tablero, 'O', -Infinity, Infinity, 1);
         const endTime = performance.now();
 
         const tiempoTranscurrido = endTime - startTime;
@@ -150,6 +161,7 @@ const Reversi = ({ boardSize, difficulty }) => {
             const [fila, columna] = movimientosPosibles[Math.floor(Math.random() * movimientosPosibles.length)];
             setCoordenadasSugerencia({ fila, columna });
             setSugerenciaActiva(true);
+            setSugerenciaRealizada(true);
         }
     };
 

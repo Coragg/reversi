@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import _ from 'lodash'; // Asegúrate de importar la biblioteca Lodash si la estás utilizando
 
 const Reversi = ({ boardSize, difficulty }) => {
+    const [tiempoActual, setTiempoActual] = useState(0);
     const [tamanoTablero, setTamanoTablero] = useState(boardSize);
     const [tablero, setTablero] = useState(inicializarTablero(tamanoTablero));
     const [jugadorActual, setJugadorActual] = useState('X');
@@ -72,9 +73,9 @@ const Reversi = ({ boardSize, difficulty }) => {
         const casillas = document.querySelectorAll('.casilla');
         casillas.forEach((casilla) => {
             casilla.classList.remove('sugerencia');
-    });
+        });
 
-    setSugerenciaActiva(false);;
+        setSugerenciaActiva(false);
     };
 
     const handleAIMove = () => {
@@ -91,14 +92,10 @@ const Reversi = ({ boardSize, difficulty }) => {
 
     const handleAIEasyMove = () => {
         const startTime = performance.now();
-        const [bestRow, bestCol] = minimax(tablero, 'O', -Infinity, Infinity, 1);
+        const [bestRow, bestCol] = minimax(tablero, 'O', -Infinity, Infinity, 2);
         const endTime = performance.now();
 
         const tiempoTranscurrido = endTime - startTime;
-        setDatosIA((prevDatos) => ({
-            nodosExplorados: prevDatos.nodosExplorados + 1,
-            tiempoUtilizado: tiempoTranscurrido,
-        }));
 
         if (bestRow !== -1 && bestCol !== -1) {
             const nuevoTableroIA = realizarMovimiento(tablero, bestRow, bestCol, 'O');
@@ -109,17 +106,13 @@ const Reversi = ({ boardSize, difficulty }) => {
             setJugadorActual('X');
         }
     };
-//cuando owo => uwu (/°-°)/
+
     const handleAIMediumMove = () => {
         const startTime = performance.now();
-        const [bestRow, bestCol] = minimax(tablero, 'O', -Infinity, Infinity, 5);
+        const [bestRow, bestCol] = minimax(tablero, 'O', -Infinity, Infinity, 4);
         const endTime = performance.now();
 
         const tiempoTranscurrido = endTime - startTime;
-        setDatosIA((prevDatos) => ({
-            nodosExplorados: prevDatos.nodosExplorados + 1,
-            tiempoUtilizado: tiempoTranscurrido,
-        }));
 
         if (bestRow !== -1 && bestCol !== -1) {
             const nuevoTableroIA = realizarMovimiento(tablero, bestRow, bestCol, 'O');
@@ -130,18 +123,15 @@ const Reversi = ({ boardSize, difficulty }) => {
             setJugadorActual('X');
         }
     };
+
 
     const handleAIHardMove = () => {
         const startTime = performance.now();
-        const [bestRow, bestCol] = minimax(tablero, 'O', -Infinity, Infinity, 7);
+        const [bestRow, bestCol] = minimax(tablero, 'O', -Infinity, Infinity, 4);
         const endTime = performance.now();
-
+    
         const tiempoTranscurrido = endTime - startTime;
-        setDatosIA((prevDatos) => ({
-            nodosExplorados: prevDatos.nodosExplorados + 1,
-            tiempoUtilizado: tiempoTranscurrido,
-        }));
-
+    
         if (bestRow !== -1 && bestCol !== -1) {
             const nuevoTableroIA = realizarMovimiento(tablero, bestRow, bestCol, 'O');
             const [nuevoContadorJugadorXIA, nuevoContadorJugadorOIA] = contarFichas(nuevoTableroIA);
@@ -149,11 +139,30 @@ const Reversi = ({ boardSize, difficulty }) => {
             setContadorJugadorX(nuevoContadorJugadorXIA);
             setContadorJugadorO(nuevoContadorJugadorOIA);
             setJugadorActual('X');
-        }
+        }   
     };
 
+    function evaluarTablero(tablero) {
+        let fichasX = 0;
+        let fichasO = 0;
+
+        for (const fila of tablero) {
+            for (const casilla of fila) {
+                if (casilla === 'X') {
+                    fichasX++;
+                } else if (casilla === 'O') {
+                    fichasO++;
+                }
+            }
+        }
+
+        const puntuacion = fichasX - fichasO;
+        return [fichasX, fichasO, puntuacion];
+    }
+
+
     const renderIcon = (casilla) => {
-        if (casilla === 'X') {
+    if (casilla === 'X') {
             return <div className="ficha-blanca"></div>;
         } else if (casilla === 'O') {
             return <div className="ficha-negra"></div>;
@@ -301,8 +310,19 @@ const Reversi = ({ boardSize, difficulty }) => {
     }
 
     function minimax(tablero, jugador, alpha, beta, profundidad) {
+        const startTime = performance.now();
+
+        setDatosIA((prevDatos) => ({
+            nodosExplorados: prevDatos.nodosExplorados + 1,
+            tiempoUtilizado: prevDatos.tiempoUtilizado, // Mantén el tiempo anterior
+        }));
+
         if (profundidad === 0 || !hayMovimientosPosibles(tablero, jugador)) {
             const [, score] = evaluarTablero(tablero);
+            const endTime = performance.now();
+            const tiempoTranscurrido = endTime - startTime;
+            setTiempoActual(tiempoTranscurrido); // Almacena el tiempo actual
+
             return [-1, -1, score];
         }
 
@@ -325,6 +345,10 @@ const Reversi = ({ boardSize, difficulty }) => {
                     break;
                 }
             }
+            const endTime = performance.now();
+            const tiempoTranscurrido = endTime - startTime;
+            setTiempoActual(tiempoTranscurrido); // Almacena el tiempo actual
+
             return [bestRow, bestCol, maxScore];
         } else {
             let minScore = Infinity;
@@ -341,6 +365,10 @@ const Reversi = ({ boardSize, difficulty }) => {
                     break;
                 }
             }
+            const endTime = performance.now();
+            const tiempoTranscurrido = endTime - startTime;
+            setTiempoActual(tiempoTranscurrido); // Almacena el tiempo actual
+
             return [bestRow, bestCol, minScore];
         }
     }
@@ -388,7 +416,7 @@ const Reversi = ({ boardSize, difficulty }) => {
 
     function obtenerResultado() {
         const [fichasX, fichasO] = contarFichas(tablero);
-    
+
         if (fichasX > fichasO) {
             return 'Jugador Blanco gana';
         } else if (fichasO > fichasX) {
@@ -398,46 +426,47 @@ const Reversi = ({ boardSize, difficulty }) => {
         }
     }
 
-    return (
-        <div className="game-container">
-            <h1>Reversi</h1>
-            <label htmlFor="boardSize">Tamaño del Tablero:</label>
-            <select id="boardSize" onChange={handleBoardSizeChange} value={tamanoTablero}>
-                <option value={6}>6x6</option>
-                <option value={8}>8x8</option>
-            </select>
-            <label htmlFor="difficulty">Nivel de Dificultad:</label>
-            <select id="difficulty" onChange={(e) => setNivelDificultad(e.target.value)} value={nivelDificultad}>
-                <option value="facil">Fácil</option>
-                <option value="medio">Medio</option>
-                <option value="dificil">Difícil</option>
-            </select>
-            <button onClick={sugerirJugada}>Sugerir Jugada</button>
+return (
+    <div className="game-container">
+        <h1>Reversi</h1>
+        <label htmlFor="boardSize">Tamaño del Tablero:</label>
+        <select id="boardSize" onChange={handleBoardSizeChange} value={tamanoTablero}>
+            <option value={6}>6x6</option>
+            <option value={8}>8x8</option>
+        </select>
+        <label htmlFor="difficulty">Nivel de Dificultad:</label>
+        <select id="difficulty" onChange={(e) => setNivelDificultad(e.target.value)} value={nivelDificultad}>
+            <option value="facil">Fácil</option>
+            <option value="medio">Medio</option>
+            <option value="dificil">Difícil</option>
+        </select>
+        <button onClick={sugerirJugada}>Sugerir Jugada</button>
 
-                <div className={`tablero ${tamanoTablero === 6 ? 'tablero-6x6' : 'tablero-8x8'}`} id="tablero">
-                    {tablero.map((fila, rowIndex) => (
-                        fila.map((casilla, columnIndex) => (
-                            <div
-                                key={`${rowIndex}-${columnIndex}`}
-                                className={`casilla ${casilla} ${coordenadasSugerencia && coordenadasSugerencia.fila === rowIndex && coordenadasSugerencia.columna === columnIndex ? 'sugerencia' : ''}`}
-                                data-fila={rowIndex}
-                                data-columna={columnIndex}
-                                onClick={() => handleCasillaClick(rowIndex, columnIndex)}
-                            >
-                                {renderIcon(casilla)}
-                            </div>
-                        ))
-                    ))}
-                </div>
-
-            <p id="mensaje">
-                Nodos explorados: {datosIA.nodosExplorados}, Tiempo utilizado: {datosIA.tiempoUtilizado.toFixed(2)} ms               
-            </p>
-            {juegoTerminado && (
-                <p id="mensaje">¡Juego terminado! Resultado: {obtenerResultado()}</p>
-            )}
+        <div className={`tablero ${tamanoTablero === 6 ? 'tablero-6x6' : 'tablero-8x8'}`} id="tablero">
+            {tablero.map((fila, rowIndex) => (
+                fila.map((casilla, columnIndex) => (
+                    <div
+                        key={`${rowIndex}-${columnIndex}`}
+                        className={`casilla ${casilla} ${coordenadasSugerencia && coordenadasSugerencia.fila === rowIndex && coordenadasSugerencia.columna === columnIndex ? 'sugerencia' : ''}`}
+                        data-fila={rowIndex}
+                        data-columna={columnIndex}
+                        onClick={() => handleCasillaClick(rowIndex, columnIndex)}
+                    >
+                        {renderIcon(casilla)}
+                    </div>
+                ))
+            ))}
         </div>
-    );
-};
+
+        <p id="mensaje">
+            Nodos explorados: {datosIA.nodosExplorados}, Tiempo utilizado: {tiempoActual.toFixed(2)} ms
+        </p>
+        {juegoTerminado && (
+            <p id="mensaje">¡Juego terminado! Resultado: {obtenerResultado()}</p>
+        )}
+    </div>
+);
+
+}
 
 export default Reversi;

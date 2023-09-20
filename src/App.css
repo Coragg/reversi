@@ -23,6 +23,7 @@
   cursor: pointer;
   font-size: 0px;
 }
+
 .ficha-blanca {
   background-color: white;
   border: 1.2px solid black;
@@ -53,20 +54,6 @@
   font-size: 32px;
   color: #000000;
 }
-
-/*
-.menu-background {
-  background-image: url('ruta-de-tu-imagen-de-fondo.jpg');
-  background-size: cover;
-  background-position: center;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  opacity: 0.6;
-  z-index: -1;
-}*/
 
 
 label {
@@ -104,5 +91,4 @@ select {
 .sugerencia {
   /* Estilos de la casilla sugerida cuando la sugerencia está activa */
   background-color: yellow;
-  background-color:
 }

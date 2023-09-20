@@ -56,6 +56,7 @@ const Reversi = ({ boardSize, difficulty }) => {
                 setContadorJugadorX(nuevoContadorJugadorX);
                 setContadorJugadorO(nuevoContadorJugadorO);
                 setJugadorActual('O');
+
                 verificarFinDelJuego();
                 setSugerenciaRealizada(false);
             } else {
@@ -92,7 +93,7 @@ const Reversi = ({ boardSize, difficulty }) => {
 
     const handleAIEasyMove = () => {
         const startTime = performance.now();
-        const [bestRow, bestCol] = minimax(tablero, 'O', -Infinity, Infinity, 2);
+        const [bestRow, bestCol] = miniMax(tablero, 'O', -Infinity, Infinity, 2);
         const endTime = performance.now();
 
         const tiempoTranscurrido = endTime - startTime;
@@ -109,7 +110,7 @@ const Reversi = ({ boardSize, difficulty }) => {
 
     const handleAIMediumMove = () => {
         const startTime = performance.now();
-        const [bestRow, bestCol] = minimax(tablero, 'O', -Infinity, Infinity, 4);
+        const [bestRow, bestCol] = miniMax(tablero, 'O', -Infinity, Infinity, 4);
         const endTime = performance.now();
 
         const tiempoTranscurrido = endTime - startTime;
@@ -127,7 +128,7 @@ const Reversi = ({ boardSize, difficulty }) => {
 
     const handleAIHardMove = () => {
         const startTime = performance.now();
-        const [bestRow, bestCol] = minimax(tablero, 'O', -Infinity, Infinity, 4);
+        const [bestRow, bestCol] = miniMax(tablero, 'O', -Infinity, Infinity, 7);
         const endTime = performance.now();
     
         const tiempoTranscurrido = endTime - startTime;
@@ -293,23 +294,8 @@ const Reversi = ({ boardSize, difficulty }) => {
         return false;
     }
 
-    function obtenerMovimientoAleatorio(tablero, jugador) {
-        const movimientosPosibles = [];
-        for (let fila = 0; fila < tablero.length; fila++) {
-            for (let columna = 0; columna < tablero[0].length; columna++) {
-                if (esMovimientoValido(tablero, fila, columna, jugador)) {
-                    movimientosPosibles.push([fila, columna]);
-                }
-            }
-        }
-        if (movimientosPosibles.length === 0) {
-            return [-1, -1];
-        }
-        const indiceAleatorio = Math.floor(Math.random() * movimientosPosibles.length);
-        return movimientosPosibles[indiceAleatorio];
-    }
 
-    function minimax(tablero, jugador, alpha, beta, profundidad) {
+    function miniMax(tablero, jugador, alpha, beta, profundidad) {
         const startTime = performance.now();
 
         setDatosIA((prevDatos) => ({
@@ -334,7 +320,7 @@ const Reversi = ({ boardSize, difficulty }) => {
             let maxScore = -Infinity;
             for (const [row, col] of movimientosPosibles) {
                 const nuevoTablero = realizarMovimiento(tablero, row, col, jugador);
-                const [, score] = minimax(nuevoTablero, 'X', alpha, beta, profundidad - 1);
+                const [, score] = miniMax(nuevoTablero, 'X', alpha, beta, profundidad - 1);
                 if (score > maxScore) {
                     maxScore = score;
                     bestRow = row;
@@ -354,7 +340,7 @@ const Reversi = ({ boardSize, difficulty }) => {
             let minScore = Infinity;
             for (const [row, col] of movimientosPosibles) {
                 const nuevoTablero = realizarMovimiento(tablero, row, col, jugador);
-                const [, score] = minimax(nuevoTablero, 'O', alpha, beta, profundidad - 1);
+                const [, score] = miniMax(nuevoTablero, 'O', alpha, beta, profundidad - 1);
                 if (score < minScore) {
                     minScore = score;
                     bestRow = row;
@@ -373,23 +359,6 @@ const Reversi = ({ boardSize, difficulty }) => {
         }
     }
 
-    function evaluarTablero(tablero) {
-        let fichasX = 0;
-        let fichasO = 0;
-
-        for (const fila of tablero) {
-            for (const casilla of fila) {
-                if (casilla === 'X') {
-                    fichasX++;
-                } else if (casilla === 'O') {
-                    fichasO++;
-                }
-            }
-        }
-
-        const puntuacion = fichasX - fichasO;
-        return [fichasX, fichasO, puntuacion];
-    }
 
     function hayMovimientosPosibles(tablero, jugador) {
         for (let fila = 0; fila < tablero.length; fila++) {

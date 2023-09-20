@@ -69,10 +69,17 @@ const Reversi = ({ boardSize, difficulty }) => {
                 setJugadorActual('X');
             }
         }
-        setSugerenciaActiva(false); 
+        const casillas = document.querySelectorAll('.casilla');
+        casillas.forEach((casilla) => {
+            casilla.classList.remove('sugerencia');
+    });
+    
+    setSugerenciaActiva(false);; 
     };
 
     const handleAIMove = () => {
+        setSugerenciaActiva(false);
+
         if (nivelDificultad === 'facil') {
             handleAIEasyMove();
         } else if (nivelDificultad === 'medio') {

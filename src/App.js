@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
-import _ from 'lodash';
 import Reversi from './components/Reversi';
 import Menu from './components/Menu';
 

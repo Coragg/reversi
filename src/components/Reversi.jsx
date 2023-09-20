@@ -2,13 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import _ from 'lodash'; // Asegúrate de importar la biblioteca Lodash si la estás utilizando
 
 const Reversi = ({ boardSize, difficulty }) => {
-    const [tamanoTablero, setTamanoTablero] = useState(8);
+    const [tamanoTablero, setTamanoTablero] = useState(boardSize);
     const [tablero, setTablero] = useState(inicializarTablero(tamanoTablero));
     const [jugadorActual, setJugadorActual] = useState('X');
     const [contadorJugadorX, setContadorJugadorX] = useState(2);
     const [contadorJugadorO, setContadorJugadorO] = useState(2);
     const [juegoTerminado, setJuegoTerminado] = useState(false);
-    const [nivelDificultad, setNivelDificultad] = useState('facil');
+    const [nivelDificultad, setNivelDificultad] = useState(difficulty);
     const [sugerenciaActiva, setSugerenciaActiva] = useState(false);
     const [sugerenciaRealizada, setSugerenciaRealizada] = useState(false);
     const [coordenadasSugerencia, setCoordenadasSugerencia] = useState(null);
@@ -56,7 +56,7 @@ const Reversi = ({ boardSize, difficulty }) => {
                 setContadorJugadorO(nuevoContadorJugadorO);
                 setJugadorActual('O');
                 verificarFinDelJuego();
-                setSugerenciaRealizada(false);               
+                setSugerenciaRealizada(false);
             } else {
                 setMensaje("Movimiento inválido. Inténtalo de nuevo");
             }
@@ -73,8 +73,8 @@ const Reversi = ({ boardSize, difficulty }) => {
         casillas.forEach((casilla) => {
             casilla.classList.remove('sugerencia');
     });
-    
-    setSugerenciaActiva(false);; 
+
+    setSugerenciaActiva(false);;
     };
 
     const handleAIMove = () => {
